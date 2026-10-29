@@ -42,26 +42,53 @@ class UploadValidationTest extends TestCase
         return array_map(fn (string $name) => [$name], [
             'avatar.php', 'avatar.PHP', 'avatar.php8', 'avatar.php.jpg', 'avatar.phtml',
             'avatar.pht', 'avatar.phar', '.htaccess', '.user.ini', '../avatar.png',
-            'folder/avatar.png', 'folder\\avatar.png', 'avatar.php.', 'avatar.png ',
+            'folder/avatar.png', 'folder\\avatar.png', 'avatar.php.', 'avatar.png ', '../avatar.php', 'folder/avatar.php', 'folder\\avatar.php',
         ]);
     }
 
-    #[DataProvider('unsafeNames')]
+    public static function unsafeClientNames(): array
+    {
+        return array_filter(self::unsafeNames(), fn (array $case) => !in_array($case[0], [
+            '../avatar.png', 'folder/avatar.png', 'folder\\avatar.png',
+        ], true));
+    }
+
+    #[DataProvider('unsafeClientNames')]
     public function testUnsafeClientNamesAreRejectedEvenForValidImageContent(string $name): void
     {
         $this->expectException(ValidationException::class);
         UploadValidation::validate(new UploadedFile($this->file, $name, null, null, true), 'safe.png', true);
     }
 
-    #[DataProvider('unsafeNames')]
-    public function testUnsafeGeneratedNamesAreRejectedBeforeStorage(string $name): void
+    public static function unsafeDestinations(): array
     {
-        $field = new UploadProbe($name);
+        $cases = [];
+        foreach ([UploadProbe::class, ImageUploadProbe::class, MultipleUploadProbe::class, MultipleImageUploadProbe::class] as $class) {
+            foreach (self::unsafeNames() as [$name]) {
+                $cases[] = [$class, $name];
+            }
+        }
+        return $cases;
+    }
+
+    #[DataProvider('unsafeDestinations')]
+    public function testUnsafeGeneratedNamesAreRejectedBeforeStorage(string $class, string $name): void
+    {
+        $field = new $class($name);
         try {
             $field->persist(new UploadedFile($this->file, 'safe.png', null, null, true));
             $this->fail('Unsafe filename was accepted.');
         } catch (ValidationException) {
             $this->assertSame(0, $field->writes);
+        }
+    }
+
+    public function testSymfonyNormalizesClientPathBeforeValidation(): void
+    {
+        foreach (['../avatar.png', 'folder/avatar.png', 'folder\\avatar.png'] as $name) {
+            $file = new UploadedFile($this->file, $name, null, null, true);
+            $this->assertSame('avatar.png', $file->getClientOriginalName());
+            UploadValidation::validate($file, 'safe.png', true);
         }
     }
 
@@ -87,7 +114,7 @@ class UploadValidationTest extends TestCase
     }
 }
 
-class UploadProbe extends File
+trait UploadProbeState
 {
     public int $writes = 0;
 
@@ -96,14 +123,50 @@ class UploadProbe extends File
         $this->name = $name;
         $this->directory = 'uploads';
         $this->storage = new class($this) {
-            public function __construct(private UploadProbe $field) {}
+            public function __construct(private object $field) {}
             public function exists($path) { return false; }
             public function putFileAs($directory, $file, $name) { $this->field->writes++; return $directory.'/'.$name; }
         };
     }
 
+}
+
+class UploadProbe extends File
+{
+    use UploadProbeState;
+
     public function persist(UploadedFile $file): mixed
     {
         return $this->uploadAndDeleteOriginal($file);
+    }
+}
+
+class ImageUploadProbe extends \Encore\Admin\Form\Field\Image
+{
+    use UploadProbeState;
+
+    public function persist(UploadedFile $file): mixed
+    {
+        return $this->uploadAndDeleteOriginal($file);
+    }
+}
+
+class MultipleUploadProbe extends \Encore\Admin\Form\Field\MultipleFile
+{
+    use UploadProbeState;
+
+    public function persist(UploadedFile $file): mixed
+    {
+        return $this->upload($file);
+    }
+}
+
+class MultipleImageUploadProbe extends \Encore\Admin\Form\Field\MultipleImage
+{
+    use UploadProbeState;
+
+    public function persist(UploadedFile $file): mixed
+    {
+        return $this->upload($file);
     }
 }

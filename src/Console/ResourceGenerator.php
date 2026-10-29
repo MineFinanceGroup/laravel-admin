@@ -23,17 +23,6 @@ class ResourceGenerator
     /**
      * @var array
      */
-    private $doctrineTypeMapping = [
-        'string' => [
-            'enum', 'geometry', 'geometrycollection', 'linestring',
-            'polygon', 'multilinestring', 'multipoint', 'multipolygon',
-            'point',
-        ],
-    ];
-
-    /**
-     * @var array
-     */
     protected $fieldTypeMapping = [
         'ip'       => 'ip',
         'email'    => 'email|mail',
