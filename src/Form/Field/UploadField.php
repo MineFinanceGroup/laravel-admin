@@ -419,9 +419,13 @@ trait UploadField
      */
     public function renameIfExists(UploadedFile $file)
     {
+        UploadValidation::validate($file, $this->name, $this instanceof Image || $this instanceof MultipleImage);
+
         if ($this->storage->exists("{$this->getDirectory()}/$this->name")) {
             $this->name = $this->generateUniqueName($file);
         }
+
+        UploadValidation::validate($file, $this->name, $this instanceof Image || $this instanceof MultipleImage);
     }
 
     /**
