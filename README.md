@@ -1,3 +1,15 @@
+# MineFinanceGroup compatibility fork
+
+This fork retains `encore/laravel-admin` and the `Encore\Admin` namespaces for existing applications and extensions. The `laravel-13-php-85` branch targets Laravel 13 and PHP 8.5. It is a migration candidate, not an upstream release.
+
+- Uploads reject unsafe client and destination names at the common single/multiple storage boundary, including PHP extensions, multi-extension names, traversal and server configuration filenames. Image fields additionally validate image content and image extensions. SVG image uploads are not enabled.
+- This addresses the storage path behind CVE-2023-24249; see `tests/Compatibility/UploadValidationTest.php` for regression coverage. MIME validation alone is not relied upon.
+- Nullable declarations and CSV escape arguments are explicit for PHP 8.5.
+- Resource generation uses Laravel native schema metadata instead of removed Doctrine connection methods.
+- The original browser-kit suite under `tests/` has not been ported. Compatibility tests can be run explicitly with a Laravel 13 / PHPUnit 12 autoloader. Full application/admin integration testing is required before rollout.
+
+The license and upstream history are retained below.
+
 <p align="center">
 <a href="https://laravel-admin.org/">
 <img src="https://laravel-admin.org/images/logo002.png" alt="laravel-admin">
