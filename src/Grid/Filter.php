@@ -610,7 +610,7 @@ class Filter implements Renderable
             $keys = $keys->toArray();
         }
 
-        $keys = (array) $keys;
+        $keys = array_map(static fn ($key) => $key ?? '', (array) $keys);
 
         $request = request();
 

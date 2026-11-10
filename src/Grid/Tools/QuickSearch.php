@@ -2,7 +2,7 @@
 
 namespace Encore\Admin\Grid\Tools;
 
-use Encore\Admin\Grid\Concerns\HasQuickSearch;
+use Encore\Admin\Grid;
 use Illuminate\Support\Arr;
 
 class QuickSearch extends AbstractTool
@@ -36,14 +36,16 @@ class QuickSearch extends AbstractTool
      */
     public function render()
     {
+        $gridClass = $this->grid ? get_class($this->grid) : Grid::class;
+        $searchKey = $gridClass::$searchKey;
         $query = request()->query();
 
-        Arr::forget($query, HasQuickSearch::$searchKey);
+        Arr::forget($query, $searchKey);
 
         $vars = [
             'action'      => request()->url().'?'.http_build_query($query),
-            'key'         => HasQuickSearch::$searchKey,
-            'value'       => request(HasQuickSearch::$searchKey),
+            'key'         => $searchKey,
+            'value'       => request($searchKey),
             'placeholder' => $this->placeholder,
         ];
 
