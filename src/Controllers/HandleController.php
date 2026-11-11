@@ -45,7 +45,7 @@ class HandleController extends Controller
             throw new Exception('Invalid form request.');
         }
 
-        $formClass = $request->get('_form_');
+        $formClass = $request->input('_form_');
 
         if (!class_exists($formClass)) {
             throw new Exception("Form [{$formClass}] does not exist.");
@@ -112,7 +112,7 @@ class HandleController extends Controller
             throw new Exception('Invalid action request.');
         }
 
-        $actionClass = str_replace('_', '\\', $request->get('_action'));
+        $actionClass = str_replace('_', '\\', $request->input('_action', ''));
 
         if (!class_exists($actionClass)) {
             throw new Exception("Form [{$actionClass}] does not exist.");
@@ -152,8 +152,8 @@ class HandleController extends Controller
      */
     public function handleSelectable(Request $request)
     {
-        $class = $request->get('selectable');
-        $args = $request->get('args', []);
+        $class = $request->input('selectable', '');
+        $args = $request->input('args', []);
 
         $class = str_replace('_', '\\', $class);
 
@@ -174,8 +174,8 @@ class HandleController extends Controller
      */
     public function handleRenderable(Request $request)
     {
-        $class = $request->get('renderable');
-        $key = $request->get('key');
+        $class = $request->input('renderable', '');
+        $key = $request->input('key');
 
         $class = str_replace('_', '\\', $class);
 

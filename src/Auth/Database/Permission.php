@@ -98,7 +98,7 @@ class Permission extends Model
      */
     public function getHttpPathAttribute($path)
     {
-        return str_replace("\r\n", "\n", $path);
+        return str_replace("\r\n", "\n", $path ?? '');
     }
 
     /**
