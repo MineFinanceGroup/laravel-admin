@@ -89,11 +89,11 @@ SCRIPT;
      */
     public function retrieveModel(Request $request)
     {
-        if (!$key = $request->get('_key')) {
+        if (!$key = $request->input('_key')) {
             return false;
         }
 
-        $modelClass = str_replace('_', '\\', $request->get('_model'));
+        $modelClass = str_replace('_', '\\', $request->input('_model', ''));
 
         if (is_string($key)) {
             $key = explode(',', $key);

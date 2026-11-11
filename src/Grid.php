@@ -370,7 +370,7 @@ class Grid
     {
         $column = substr($name, strrpos($name, '->') + 2);
 
-        $name = str_replace('->', '.', $name);
+        $name = str_replace('->', '.', $name ?? '');
 
         return $this->addColumn($name, $label ?: ucfirst($column));
     }

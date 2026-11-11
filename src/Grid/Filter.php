@@ -348,7 +348,7 @@ class Filter implements Renderable
         $inputs = collect($inputs)->filter(function ($input, $key) {
             return Str::startsWith($key, "{$this->name}_");
         })->mapWithKeys(function ($val, $key) {
-            $key = str_replace("{$this->name}_", '', $key);
+            $key = str_replace("{$this->name}_", '', $key ?? '');
 
             return [$key => $val];
         })->toArray();
@@ -610,7 +610,7 @@ class Filter implements Renderable
             $keys = $keys->toArray();
         }
 
-        $keys = (array) $keys;
+        $keys = array_map(static fn ($key) => $key ?? '', (array) $keys);
 
         $request = request();
 
